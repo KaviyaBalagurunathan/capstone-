@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FoodBay </title>
+  <style>
+    body { font-family: sans-serif; background: #fff0f5; text-align: center; margin: 0; }
+    .page { display: none; padding: 20px; }
+    .active { display: block; }
+    h1 { color: #007f5f; }
+    .menu { display: flex; flex-wrap: wrap; justify-content: center; }
+    .item {
+      background: #caffbf; border: 1px solid #ccc; border-radius: 10px;
+      margin: 10px; padding: 10px; width: 220px; box-sizing: border-box;
+    }
+    .item img { width: 100%; height: 130px; object-fit: cover; border-radius: 8px; }
+    .item button, button {
+      padding: 8px 12px; border: none; border-radius: 5px;
+      background: #38b000; color: white; cursor: pointer; margin: 5px;
+    }
+    input, textarea, select {
+      padding: 10px; width: 80%; max-width: 300px; margin: 10px auto;
+      display: block; border-radius: 5px; border: 1px solid #aaa;
+    }
+    #notif {
+      background: #edffdc; color: #004d00;
+      padding: 10px; border-radius: 5px;
+      position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+      display: none;
+      z-index: 2000;
+    }
+    /* Details page styles */
+    .details-card { background: #fff; border-radius: 10px; padding: 15px; max-width: 420px; margin: 0 auto; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.1);} 
+    .details-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+    .small-info { font-size: 14px; color: #333; }
+    .muted { color: #555; font-size: 13px; }
+
+    /* Panels */
+    .panel {
+      position: fixed;
+      right: -420px;
+      top: 60px;
+      width: 400px;
+      max-height: 80vh;
+      overflow: auto;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      padding: 12px;
+      transition: right 0.28s ease;
+      z-index: 1600;
+    }
+    .panel.open { right: 12px; }
+    .panel h3 { margin: 6px 0 8px 0; }
+    .panel .closeBtn {
+      background: transparent;
+      color: #333;
+      border: 1px solid #ddd;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      float: right;
+      margin-top: -8px;
+    }
+    .panel .item-row { border-bottom: 1px solid #eee; padding: 8px 0; text-align: left; }
+    .panel .meta { font-size: 12px; color: #666; margin-top: 4px; }
+    .count-badge { display:inline-block; background:#f2f2f2; padding:6px 8px; border-radius:8px; font-weight:600; margin-left:8px; font-size:13px; }
+
+    /* small responsive tweak */
+    @media (max-width: 500px) {
+      .panel { width: 92%; right: -100%; }
+      .panel.open { right: 4%; }
+    }
+  </style>
+</head>
+<body>
+<div id="notif"></div>
+
+<!-- Delivery panel -->
+<div id="deliveryPanel" class="panel" aria-hidden="true">
+  <button class="closeBtn" onclick="closeDeliveryPanel()">Close</button>
+  <h3>Delivery History <span id="deliveryCount" class="count-badge">0</span></h3>
+  <div id="deliveryList"></div>
+</div>
+
+<!-- Review panel -->
+<div id="reviewPanel" class="panel" aria-hidden="true">
+  <button class="closeBtn" onclick="closeReviewPanel()">Close</button>
+  <h3>Reviews <span id="reviewCount" class="count-badge">0</span></h3>
+  <div id="reviewList"></div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="login" class="page active">
+  <h1>🔐 Login to FoodBay</h1>
+  <input type="text" id="username" placeholder="Username"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button><br>
+  <button onclick="showPage('signup')">Sign Up</button>
+  <button onclick="showPage('forgot')">Forgot Password</button>
+</div>
+
+<!-- SIGNUP PAGE -->
+<div id="signup" class="page">
+  <h1>📝 Create Account</h1>
+  <input type="text" id="signupUser" placeholder="Enter Username"><br>
+  <input type="password" id="signupPass" placeholder="Enter Password"><br>
+  <button onclick="signup()">Create Account</button>
+  <button onclick="showPage('login')">Back to Login</button>
+</div>
+
+<!-- FORGOT PASSWORD PAGE -->
+<div id="forgot" class="page">
+  <h1>🔄 Reset Password</h1>
+  <input type="text" id="forgotUser" placeholder="Enter Username"><br>
+  <input type="password" id="newPass" placeholder="New Password"><br>
+  <input type="password" id="confirmPass" placeholder="Confirm Password"><br>
+  <button onclick="resetPassword()">Reset Password</button>
+  <button onclick="showPage('login')">Back to Login</button>
+</div>
+
+<!-- HOME PAGE -->
+<div id="home" class="page">
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
+    <img src="c:\\Users\\KAVIYA SARASWATHI B\\Downloads\\d11343d64b7af3af41e0c236a24052f7-removebg-preview (1).png" alt="FoodBay Logo" style="width: 65px; height: 65px; object-fit: contain;">
+    <div>
+      <h1 style="margin:0;">Welcome to FoodBay</h1>
+      <p style="margin:4px 0;">Delicious Chicken Dishes Await You!</p>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;">
+    <button onclick="showPage('menu')">View Menu</button>
+    <button onclick="showPage('contact')">Contact Us</button>
+  </div>
+</div>
+
+<!-- CONTACT PAGE -->
+<div id="contact" class="page">
+  <h1>📞 Contact Us</h1>
+  <p>Phone: +91 7871892193</p>
+  <button onclick="showPage('home')">Back to Home</button>
+</div>
+
+<!-- MENU PAGE -->
+<div id="menu" class="page">
+  <div style="display: flex; align-items: center; justify-content: center; gap:10px; flex-wrap:wrap;">
+    <img src="c:\\Users\\KAVIYA SARASWATHI B\\Downloads\\simple-illustration-of-food-delivery-and-restaurant-logo-design-inspiration-icon-vector-removebg-preview.png" style="width: 90px; height: 90px; object-fit: contain;">
+    <h1 style="margin:0;">Chicken Menu</h1>
+  </div>
+  <div class="menu" id="dishList"></div>
+  <button onclick="showPage('cart')">Go to Cart</button>
+</div>
+
+<!-- DETAILS PAGE -->
+<div id="details" class="page">
+  <h1>🍗 Dish Details</h1>
+  <div id="detailsCard" class="details-card"></div>
+  <button onclick="showPage('menu')">Back to Menu</button>
+</div>
+
+<!-- CART PAGE -->
+<div id="cart" class="page">
+  <h1>🛒 Your Cart</h1>
+  <ul id="cartItems"></ul>
+  <h3 id="totalAmount">Total: ₹0</h3>
+  <input type="text" id="address" placeholder="Enter Delivery Address">
+  <button onclick="placeOrder()">Place Order</button>
+  <button onclick="showPage('menu')">Back to Menu</button>
+</div>
+
+<!-- CONFIRMATION PAGE -->
+<div id="confirm" class="page">
+  <h1>✅ Order Confirmed!</h1>
+  <p>Thank you for ordering from FoodBay.</p>
+  <a id="whatsappLink" href="#" target="_blank"><button>Send to WhatsApp</button></a>
+  <button onclick="showPage('scratch')">Get Scratch Card</button>
+</div>
+
+<!-- SCRATCH PAGE -->
+<div id="scratch" class="page">
+  <h1>🎁 Scratch Card</h1>
+  <button onclick="reveal()">SCRATCH</button>
+  <h2 id="result"></h2>
+  <button onclick="showPage('track')">Track Order</button>
+</div>
+
+<!-- TRACK PAGE -->
+<div id="track" class="page">
+  <h1>🚚 Your order is on the way.</h1>
+  <p>Your food is on the way to: <b id="trackAddress"></b></p>
+  <p>Estimated delivery: 20-30 minutes</p>
+  <p>⌛ Please wait while your food is being delivered...</p>
+</div>
+
+<!-- DELIVERED PAGE -->
+<div id="delivered" class="page">
+  <h1>🍽️ Your Order is Delivered Successfully!</h1>
+  <p>💬 Thanks for ordering from FoodBay!</p>
+  <button onclick="showPage('review')">Rate Now ⭐</button>
+</div>
+
+<!-- REVIEW PAGE -->
+<div id="review" class="page">
+  <h1>⭐ Rate Your Experience</h1>
+  <p>Hi <b id="reviewUser"></b>, leave your review below</p>
+  <label for="rating">Rating:</label>
+  <select id="rating">
+    <option value="5">⭐️⭐️⭐️⭐️⭐️ - Excellent</option>
+    <option value="4">⭐️⭐️⭐️⭐️ - Good</option>
+    <option value="3">⭐️⭐️⭐️ - Average</option>
+    <option value="2">⭐️⭐️ - Poor</option>
+    <option value="1">⭐️ - Very Bad</option>
+  </select>
+  <textarea id="feedback" placeholder="Your feedback..."></textarea>
+  <button onclick="submitReview()">Submit ✅</button>
+</div>
+
+<!-- THANK YOU PAGE -->
+<div id="thanks" class="page">
+  <h1>🙏 Thank You for Your Feedback!</h1>
+  <p>We appreciate you choosing FoodBay.</p>
+  <button onclick="showPage('menu')">Back to Menu 🏠</button>
+
+  <div style="margin-top: 20px;">
+  <button style="background:#2b8a3e; color:white; padding: 8px 12px; border:none; border-radius:8px; cursor:pointer; margin:5px;" onclick="openReviewPanel()">Review Tracker</button>
+  </div>
+</div>
+
+<script>
+/* -------------------------
+   App data + storage setup
+   ------------------------- */
+let cart = [];
+let currentUser = "";
+const OWNER_PHONE = '917871892193';
+let pendingOrder = null;
+const STORAGE_DELIVERIES = 'foodbay_deliveries';
+const STORAGE_REVIEWS = 'foodbay_reviews';
+const STORAGE_USERS = 'foodbay_users'; // added for signup
+
+function loadDeliveries() { try { return JSON.parse(localStorage.getItem(STORAGE_DELIVERIES) || '[]'); } catch(e){ return []; } }
+function saveDeliveries(arr) { localStorage.setItem(STORAGE_DELIVERIES, JSON.stringify(arr)); }
+function loadReviews() { try { return JSON.parse(localStorage.getItem(STORAGE_REVIEWS) || '[]'); } catch(e){ return []; } }
+function saveReviews(arr) { localStorage.setItem(STORAGE_REVIEWS, JSON.stringify(arr)); }
+function loadUsers() { try { return JSON.parse(localStorage.getItem(STORAGE_USERS) || '[]'); } catch(e){ return []; } }
+function saveUsers(arr) { localStorage.setItem(STORAGE_USERS, JSON.stringify(arr)); }
+
+/* -------------------------
+   UI helpers
+   ------------------------- */
+function showNotif(msg){ const n=document.getElementById('notif'); n.innerText=msg; n.style.display='block'; setTimeout(()=>n.style.display='none',3000); }
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='cart') loadCart();
+  if(id==='track'){ document.getElementById("trackAddress").innerText=document.getElementById("address").value;
+    setTimeout(()=>{ showPage('delivered'); recordDeliveryOnDelivered(); },10000);}
+  if(id==='review') document.getElementById("reviewUser").innerText=currentUser;
+}
+
+/* -------------------------
+   Login / Signup / Forgot Password
+   ------------------------- */
+function login() {
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value;
+  const users = loadUsers();
+  const found = users.find(x=>x.username===u && x.pass===p);
+  if(found){ currentUser=u; showPage('menu'); }
+  else { showNotif("Invalid username or password!"); }
+}
+
+function signup() {
+  const u = document.getElementById("signupUser").value.trim();
+  const p = document.getElementById("signupPass").value.trim();
+  if(!u||!p){ showNotif("Enter username and password"); return; }
+  const users = loadUsers();
+  if(users.find(x=>x.username===u)){ showNotif("Username already exists"); return; }
+  users.push({username:u, pass:p}); saveUsers(users);
+  currentUser = u;
+  showNotif("Signup successful!"); 
+  showPage('menu');
+}
+
+function resetPassword() {
+  const u = document.getElementById("forgotUser").value.trim();
+  const newP = document.getElementById("newPass").value.trim();
+  const confP = document.getElementById("confirmPass").value.trim();
+  if(!u||!newP||!confP){ showNotif("Fill all fields"); return; }
+  if(newP!==confP){ showNotif("Passwords do not match"); return; }
+  let users = loadUsers();
+  let found = users.find(x=>x.username===u);
+  if(!found){ showNotif("Username not found"); return; }
+  found.pass = newP; saveUsers(users);
+  showNotif("Password reset successful"); showPage('login');
+}
+
+/* -------------------------
+   Dishes data + rendering
+   ------------------------- */
+const dishes = [
+  { name: 'Chicken Chettinad', price: 230, img: 'https://i.pinimg.com/1200x/8c/23/f3/8c23f3cabfaf3aaf1e18ee27edfde5ab.jpg', protein: '26g', calories: '320 kcal', ingredients: ['Chicken', 'Coriander', 'Curry leaves', 'Spices'] },
+  { name: 'Andhra Chicken Curry', price: 220, img: 'https://static.vecteezy.com/system/resources/previews/057/939/967/non_2x/a-bowl-of-food-with-a-coconut-and-some-other-vegetables-photo.jpg', protein: '24g', calories: '300 kcal', ingredients: ['Chicken', 'Tamarind', 'Chili', 'Spices'] },
+  { name: 'Chicken 65', price: 210, img: 'https://i.pinimg.com/736x/a8/d1/4e/a8d14e2968e917b32559aab51b737dfe.jpg', protein: '22g', calories: '350 kcal', ingredients: ['Chicken', 'Yogurt', 'Chili powder', 'Curry leaves'] },
+  { name: 'Kerala Chicken Roast', price: 250, img: 'https://i.pinimg.com/1200x/8c/d9/7a/8cd97a68ae4eea258ff163f758517002.jpg', protein: '27g', calories: '360 kcal', ingredients: ['Chicken', 'Coconut', 'Black pepper', 'Spices'] },
+  { name: 'Kozhi Varuval (Tamil Nadu)', price: 200, img: 'https://static.vecteezy.com/system/resources/previews/067/970/948/non_2x/a-bowl-of-food-with-a-napkin-and-a-knife-photo.jpg', protein: '23g', calories: '310 kcal', ingredients: ['Chicken', 'Garam masala', 'Curry leaves', 'Spices'] },
+  { name: 'Chicken Sukka (Mangalore)', price: 240, img: 'https://i.pinimg.com/736x/55/c1/d5/55c1d5e84ddd99da1f6225d921249637.jpg', protein: '25g', calories: '340 kcal', ingredients: ['Chicken', 'Coconut', 'Curry leaves', 'Spices'] },
+  { name: 'Hyderabadi Chicken', price: 260, img: 'https://i.pinimg.com/1200x/19/3a/42/193a42f4fe039bab2edb2a8cb40cdf10.jpg', protein: '28g', calories: '400 kcal', ingredients: ['Chicken', 'Yogurt', 'Saffron', 'Spices'] },
+  { name: 'Nadan Chicken Curry (Kerala)', price: 230, img: 'https://i.pinimg.com/1200x/df/ef/c6/dfefc677f0f178916437cd33a6490431.jpg', protein: '24g', calories: '330 kcal', ingredients: ['Chicken', 'Coconut', 'Mustard', 'Spices'] },
+  { name: 'Pepper Chicken (Tamil Nadu)', price: 200, img: 'https://i.pinimg.com/1200x/47/69/07/476907c797317e6f6b1d542e2f6a5f38.jpg', protein: '23g', calories: '300 kcal', ingredients: ['Chicken', 'Black pepper', 'Garlic', 'Spices'] },
+  { name: 'Madurai Chicken Curry', price: 240, img: 'https://i.pinimg.com/1200x/8c/23/f3/8c23f3cabfaf3aaf1e18ee27edfde5ab.jpg', protein: '26g', calories: '350 kcal', ingredients: ['Chicken', 'Madurai masala', 'Curry leaves', 'Spices'] }
+];
+
+const dishList = document.getElementById("dishList");
+
+function renderDishes() {
+  dishList.innerHTML = '';
+  dishes.forEach((d, idx) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    const ingr = d.ingredients.join(', ');
+    div.innerHTML = `
+      <img src="${d.img}" alt="${d.name}">
+      <h3>${d.name}</h3>
+      <p class="small-info">₹${d.price}</p>
+      <p class="muted">Protein: ${d.protein} • Calories: ${d.calories}</p>
+      <p class="muted" style="font-size:13px;">Ingredients: ${ingr}</p>
+      <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;">
+        <button onclick="addToCart(${idx})">Add to Cart</button>
+        <button onclick="viewDetails(${idx})">View Details</button>
+      </div>
+    `;
+    dishList.appendChild(div);
+  });
+}
+
+renderDishes();
+
+function addToCart(index) {
+  const d = dishes[index];
+  // Check if item exists, increment quantity else add
+  const existing = cart.find(c => c.name === d.name);
+  if(existing) existing.qty++;
+  else cart.push({...d, qty: 1});
+  showNotif(`${d.name} added to cart!`);
+}
+
+function viewDetails(index) {
+  const d = dishes[index];
+  const container = document.getElementById("detailsCard");
+  container.innerHTML = `
+    <img src="${d.img}" alt="${d.name}">
+    <h2>${d.name}</h2>
+    <p><b>Price:</b> ₹${d.price}</p>
+    <p><b>Protein:</b> ${d.protein}</p>
+    <p><b>Calories:</b> ${d.calories}</p>
+    <p><b>Ingredients:</b> ${d.ingredients.join(', ')}</p>
+    <button onclick="addToCart(${index})">Add to Cart</button>
+  `;
+  showPage('details');
+}
+
+/* -------------------------
+   Cart UI + order
+   ------------------------- */
+function loadCart() {
+  const list = document.getElementById("cartItems");
+  list.innerHTML = "";
+  if(cart.length === 0) {
+    list.innerHTML = "<li>Your cart is empty.</li>";
+    document.getElementById("totalAmount").innerText = "Total: ₹0";
+    return;
+  }
+  let total = 0;
+  cart.forEach((item, idx) => {
+    total += item.price * item.qty;
+    const li = document.createElement("li");
+    li.style.textAlign = "left";
+    li.style.marginBottom = "10px";
+    li.innerHTML = `
+      ${item.name} x ${item.qty} - ₹${item.price * item.qty}
+      <button onclick="removeFromCart(${idx})" style="background:#d00000;">Remove</button>
+    `;
+    list.appendChild(li);
+  });
+  document.getElementById("totalAmount").innerText = `Total: ₹${total}`;
+}
+
+function removeFromCart(index) {
+  if(cart[index].qty > 1) {
+    cart[index].qty--;
+  } else {
+    cart.splice(index, 1);
+  }
+  loadCart();
+}
+
+function placeOrder() {
+  if(cart.length === 0) {
+    showNotif("Cart is empty!");
+    return;
+  }
+  const address = document.getElementById("address").value.trim();
+  if(!address) {
+    showNotif("Please enter delivery address");
+    return;
+  }
+  // Save order for tracking
+  pendingOrder = {
+    user: currentUser,
+    items: cart.map(i => ({name:i.name, qty:i.qty})),
+    total: cart.reduce((a,c) => a + c.price * c.qty, 0),
+    address,
+    timestamp: Date.now()
+  };
+  // Create WhatsApp order message for user
+  let msg = `*Foodbay Order*\nFrom ${currentUser},\n order Dishes:\n`;
+  pendingOrder.items.forEach(i => msg += `- ${i.name} x ${i.qty}\n`);
+  msg += `Total: ₹${pendingOrder.total}\nDelivery Address:\n${address}\nThank you for ordering!`;
+  const encodedMsg = encodeURIComponent(msg);
+  const waUrl = `https://wa.me/${OWNER_PHONE}?text=${encodedMsg}`;
+
+  // Store order in deliveries for history (simulate instant delivery)
+  const deliveries = loadDeliveries();
+  deliveries.push(pendingOrder);
+  saveDeliveries(deliveries);
+
+  // Clear cart & address for next order
+  cart = [];
+  document.getElementById("address").value = "";
+  loadCart();
+
+  // Show confirmation page with WhatsApp send link
+  const waLink = document.getElementById("whatsappLink");
+  waLink.href = waUrl;
+
+  showPage('confirm');
+}
+
+/* -------------------------
+   Scratch card
+   ------------------------- */
+function reveal() {
+  const chance = Math.random();
+  const result = document.getElementById("result");
+  if(chance < 0.5) {
+    result.innerText = "🎉 You won a 10% discount on your next order!";
+  } else {
+    result.innerText = "😞 Better luck next time!";
+  }
+}
+
+/* -------------------------
+   Review tracking UI
+   ------------------------- */
+function openReviewPanel() {
+  const reviews = loadReviews();
+  const container = document.getElementById("reviewList");
+  const countSpan = document.getElementById("reviewCount");
+  countSpan.innerText = reviews.length;
+  if(reviews.length === 0) {
+    container.innerHTML = "<p>No reviews yet.</p>";
+  } else {
+    container.innerHTML = "";
+    reviews.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "item-row";
+      div.innerHTML = `
+        <strong>${r.user}</strong> rated ${r.rating}⭐ <br>
+        "${r.feedback}" <br>
+        <span class="meta">${new Date(r.timestamp).toLocaleString()}</span>
+      `;
+      container.appendChild(div);
+    });
+  }
+  const panel = document.getElementById("reviewPanel");
+  panel.classList.add("open");
+  panel.setAttribute('aria-hidden', 'false');
+}
+function closeReviewPanel() {
+  const panel = document.getElementById("reviewPanel");
+  panel.classList.remove("open");
+  panel.setAttribute('aria-hidden', 'true');
+}
+
+/* -------------------------
+   Submit review + send to WhatsApp owner
+   ------------------------- */
+function submitReview() {
+  const rating = document.getElementById("rating").value;
+  const feedback = document.getElementById("feedback").value.trim();
+  if (!feedback) {
+    showNotif("Please enter feedback.");
+    return;
+  }
+  const reviews = loadReviews();
+  const reviewEntry = {
+    user: currentUser,
+    rating,
+    feedback,
+    timestamp: Date.now()
+  };
+  reviews.push(reviewEntry);
+  saveReviews(reviews);
+  showNotif("Thanks for your review!");
+  document.getElementById("feedback").value = "";
+
+  // Prepare WhatsApp message for review
+  let msg = `*FoodBay New Review*\nUser: ${reviewEntry.user}\nRating: ${reviewEntry.rating}⭐\nFeedback: ${reviewEntry.feedback}`;
+  const encodedMsg = encodeURIComponent(msg);
+  const waUrl = `https://wa.me/${OWNER_PHONE}?text=${encodedMsg}`;
+
+  // Show prompt to send review to owner on WhatsApp
+  if(confirm("Send your review to the owner on WhatsApp?")) {
+    window.open(waUrl, '_blank');
+  }
+
+  showPage('thanks');
+}
+
+
+
+/* -------------------------
+   Initialization
+   ------------------------- */
+window.onload = () => {
+  // Start at login page
+  showPage('login');
+};
+</script>
+</body>
+</html>
